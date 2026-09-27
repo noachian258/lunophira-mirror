@@ -52,3 +52,14 @@ python import_dump.py path/to/dump.xml.gz
 ## 说明
 
 XML dump 包含 wiki 页面内容与修订信息，但通常不包含上传图片本体、用户账号或日志等站点级数据。对“让 AI 能读取世界观正文”这个目标来说，正文 XML 已经足够。
+
+
+## 当前镜像快照（2026-09-27）
+
+已从 Miraheze XML dump 导入：
+
+- 52 个导出页面的索引：`index.json`
+- 29 个主名字空间正文词条的完整语料：`corpus/all-pages-01.md` ～ `all-pages-06.md`
+- 已验证 GitHub 连接可以直接读取该语料（例如“灵魂”“玛纳泽永久契约联邦”等词条）。
+
+GitHub Code Search 对新提交存在索引延迟；即使搜索暂时无结果，也可以通过仓库文件接口直接读取 corpus。
