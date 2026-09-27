@@ -1,0 +1,57 @@
+name: Import Lunophira XML dump
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "imports/**"
+      - "import_dump.py"
+      - ".github/workflows/import-dump.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Find latest XML dump
+        id: dump
+        shell: bash
+        run: |
+          shopt -s nullglob
+          files=(imports/*.xml imports/*.xml.gz imports/*.xml.bz2)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No XML dump found under imports/."
+            exit 1
+          fi
+          latest=$(ls -1t "${files[@]}" | head -n 1)
+          echo "path=$latest" >> "$GITHUB_OUTPUT"
+          echo "Using $latest"
+
+      - name: Build mirror from dump
+        run: python import_dump.py "${{ steps.dump.outputs.path }}"
+
+      - name: Commit generated mirror
+        run: |
+          git config user.name "lunophira-wiki-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add wiki index.json all-pages.md
+
+          if git diff --cached --quiet; then
+            echo "No mirror changes detected."
+          else
+            git commit -m "Import Lunophira Wiki dump"
+            git push
+          fi
