@@ -30,6 +30,10 @@ WIKI_BASE = "https://lunophira.miraheze.org/wiki"
 
 NAMESPACES = {
     0: "main",
+    2: "user",
+    4: "project",
+    6: "file",
+    8: "mediawiki",
     10: "template",
     14: "category",
     828: "module",
