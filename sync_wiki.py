@@ -94,7 +94,8 @@ def api_get(params: dict) -> dict:
                 return json.loads(text[first : last + 1])
             raise RuntimeError(
                 "Miraheze returned HTTP 403 and the fallback reader did not "
-                "return parseable MediaWiki API JSON."
+                "return parseable MediaWiki API JSON. Proxy response prefix: "
+                + repr(text[:500])
             )
 
     response.raise_for_status()
