@@ -1,0 +1,47 @@
+name: Sync Lunophira Wiki
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * *"
+      timezone: "Asia/Tokyo"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: lunophira-mirror-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade requests
+
+      - name: Sync from Miraheze
+        run: python sync_wiki.py
+
+      - name: Commit changes
+        run: |
+          git config user.name "lunophira-wiki-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add wiki index.json all-pages.md
+
+          if git diff --cached --quiet; then
+            echo "No wiki changes detected."
+          else
+            git commit -m "Sync Lunophira Wiki"
+            git push
+          fi
