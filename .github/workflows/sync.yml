@@ -2,9 +2,6 @@ name: Sync Lunophira Wiki
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "17 3 * * *"
-      timezone: "Asia/Tokyo"
   push:
     branches: [main]
     paths:
