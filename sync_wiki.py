@@ -64,11 +64,39 @@ session.headers.update(
 
 def api_get(params: dict) -> dict:
     response = session.get(API, params=params, timeout=45)
+    if response.ok:
+        return response.json()
+
+    # Miraheze currently returns 403 to some datacenter networks, including
+    # GitHub-hosted runners. Fall back to Jina Reader as a read-only proxy.
     if response.status_code == 403:
-        raise RuntimeError(
-            "Miraheze returned HTTP 403 to the GitHub runner. "
-            "The public MediaWiki API is not accessible from this network path."
+        prepared = requests.Request("GET", API, params=params).prepare()
+        proxy_url = "https://r.jina.ai/" + prepared.url
+        proxy = session.get(
+            proxy_url,
+            timeout=90,
+            headers={
+                "Accept": "text/plain,application/json,*/*",
+                "X-Return-Format": "text",
+            },
         )
+        proxy.raise_for_status()
+        text = proxy.text.strip()
+
+        # JSON endpoints are normally returned verbatim. Be tolerant of a
+        # Markdown wrapper if the proxy adds one.
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError:
+            first = text.find("{")
+            last = text.rfind("}")
+            if first != -1 and last > first:
+                return json.loads(text[first : last + 1])
+            raise RuntimeError(
+                "Miraheze returned HTTP 403 and the fallback reader did not "
+                "return parseable MediaWiki API JSON."
+            )
+
     response.raise_for_status()
     return response.json()
 
