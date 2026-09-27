@@ -1,19 +1,10 @@
-name: Sync Lunophira Wiki
+name: Sync Lunophira Wiki (direct)
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - "sync_wiki.py"
-      - ".github/workflows/sync.yml"
 
 permissions:
   contents: write
-
-concurrency:
-  group: lunophira-mirror-sync
-  cancel-in-progress: false
 
 jobs:
   sync:
